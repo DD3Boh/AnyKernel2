@@ -40,6 +40,15 @@ if [ $? != 0 -o -z "$(ls /tmp/anykernel/tools)" ]; then
   abort "Unzip failed. Aborting...";
 fi;
 
+# Abort on Jaguar
+build_type="$(mount /system; grep "^ro.build.flavor" /system/build.prop | cut -d= -f2)";
+if [ $build_type == "jaguar_z2_plus-userdebug" ]; 
+then
+   abort "This ROM isn't supported by the DarkMoon Kernel";
+else
+   ui_print "This ROM is supported by the DarkMoon Kernel";
+fi;
+
 chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
 bb=/tmp/anykernel/tools/busybox;
 
@@ -70,15 +79,6 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.devicecheck)" == 1 ]; then
   if [ "$match" != 1 ]; then
     abort "Unsupported device. Aborting...";
   fi;
-fi;
-
-# Abort on Jaguar
-build_type="$(mount /system; grep "^ro.build.flavor" /system/build.prop | cut -d= -f2)";
-if [ $build_type == "jaguar_z2_plus-userdebug" ]; 
-then
-   abort "This ROM isn't supported by the DarkMoon Kernel";
-else
-   ui_print "This ROM is supported by the DarkMoon Kernel";
 fi;
 
 ui_print "Making the Moon darker...";

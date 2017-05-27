@@ -49,6 +49,25 @@ else
    ui_print "This ROM is supported by the DarkMoon Kernel";
 fi;
 
+# Backup modules
+if [ -f /system/backup-check ];
+then
+backup_did_already = "yes";
+else
+backup_did_already = "no";
+fi;
+
+if [ $backup_did_already == "yes" ];
+then
+ui_print "Modules backup not needed";
+else
+ui_print "Doing the modules backup...";
+mkdir $root/sdcard/restore;
+cp -r $root/system/lib/modules $root/sdcard/restore;
+echo "1" $root/system/backup-check;
+fi;
+ui_print " ";
+
 chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
 bb=/tmp/anykernel/tools/busybox;
 

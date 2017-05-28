@@ -49,22 +49,24 @@ else
    ui_print "This ROM is supported by the DarkMoon Kernel";
 fi;
 
-# Backup modules
-if [ -f /system/backup-check ];
+# Backup stock kernel and modules
+if [ -f $root/sdcard/backup-check ];
 then
 backup_did_already = "yes";
 else
 backup_did_already = "no";
 fi;
-
 if [ $backup_did_already == "yes" ];
 then
-ui_print "Modules backup not needed";
+ui_print "Modules and Kernel backup not needed";
 else
 ui_print "Doing the modules backup...";
 mkdir $root/sdcard/restore;
 cp -r $root/system/lib/modules $root/sdcard/restore;
-echo "1" $root/system/backup-check;
+ui_print "Doing the boot.img backup...";
+dd if=$root/dev/block/bootdevice/by-name/boot of=$root/sdcard/restore/boot.img;
+echo "1" > $root/sdcard/backup-check;
+ui_print "Backup done!"
 fi;
 ui_print " ";
 

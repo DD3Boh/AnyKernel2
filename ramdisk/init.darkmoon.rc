@@ -95,7 +95,7 @@ on property:sys.boot_completed=1
 
 start darkmoon
 
-service darkmoon /system/bin/sh /sbin/darkmoon.sh
+service darkmoon /system/bin/sh /darkmoon.sh
     class main
     user root
     disabled

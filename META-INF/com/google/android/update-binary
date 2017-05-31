@@ -50,13 +50,7 @@ else
 fi;
 
 # Backup stock kernel and modules
-if [ -f $root/sdcard/backup-check ];
-then
-backup_did_already = "yes";
-else
-backup_did_already = "no";
-fi;
-if [ $backup_did_already == "yes" ];
+if [ -f $root/sdcard/restore/boot.img ] && [ -d $root/sdcard/restore/modules ] && [ -f $root/sdcard/backup-check ];
 then
 ui_print "Modules and Kernel backup not needed";
 else

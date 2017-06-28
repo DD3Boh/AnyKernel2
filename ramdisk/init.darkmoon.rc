@@ -54,7 +54,7 @@ on property:sys.boot_completed=1
       write /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq 307200
 
       #gpu
-      wrire /sys/class/kgsl/kgsl-3d0/max_gpuclk 624000000
+      write /sys/class/kgsl/kgsl-3d0/max_gpuclk 624000000
 
     #interactive
 

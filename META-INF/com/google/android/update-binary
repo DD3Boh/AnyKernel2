@@ -49,27 +49,12 @@ else
    ui_print "This ROM is supported by the DarkMoon Kernel";
 fi;
 
-# Backup stock kernel and modules
-if [ -f $root/sdcard/restore/boot.img ] && [ -d $root/sdcard/restore/modules ] && [ -f $root/sdcard/backup-check ];
-then
-ui_print "Modules and Kernel backup not needed";
-else
-ui_print "Doing the modules backup...";
-mkdir $root/sdcard/restore;
-cp -r $root/system/lib/modules $root/sdcard/restore;
-ui_print "Doing the boot.img backup...";
-dd if=$root/dev/block/bootdevice/by-name/boot of=$root/sdcard/restore/boot.img;
-echo "1" > $root/sdcard/backup-check;
-ui_print "Backup done!"
-fi;
-ui_print " ";
-
 chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
 bb=/tmp/anykernel/tools/busybox;
 
 ui_print "$(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
 ui_print " ";
-ui_print "DarkMoon Kernel";
+ui_print "Noog CAF Kernel";
 ui_print " ";
 ui_print "      by       ";
 ui_print " ";
@@ -96,7 +81,7 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.devicecheck)" == 1 ]; then
   fi;
 fi;
 
-ui_print "Making the Moon darker...";
+ui_print "Noog Caffing your device...";
 for i in $($bb --list); do
   $bb ln -s $bb /tmp/anykernel/bin/$i;
 done;
@@ -124,6 +109,6 @@ fi;
 umount /system;
 umount /data;
 ui_print " ";
-ui_print "The Moon is now Dark!";
+ui_print "Noog CAF succesfully installed";
 ui_print " ";
 ui_print " ";

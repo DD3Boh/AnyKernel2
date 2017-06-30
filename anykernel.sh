@@ -40,12 +40,6 @@ dump_boot;
 insert_line default.prop "persist.sys.usb.config=mtp" after "persist.sys.usb.config=none" "ro.patcher.device=z2_plus";
 #nothing changed
 
-# add custom tuning to init.rc
-insert_line init.qcom.rc "import /init.darkmoon.rc" after "import /init.trace.rc" "import /init.darkmoon.rc\n";
-
-# add spectrum support
-insert_line init.qcom.rc "import /init.spectrum.rc" after "import /init.darkmoon.rc" "import /init.spectrum.rc\n";
-
 # remove shit
 remove_line init.qcom.power.rc "setprop sys.io.scheduler"
 

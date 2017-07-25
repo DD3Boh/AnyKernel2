@@ -115,11 +115,3 @@ on property:sys.boot_completed=1
     
     # Enable Fingerprint boost
     write /sys/kernel/fp_boost/enabled 1
-
-start darkmoon
-
-service darkmoon /system/bin/sh /darkmoon.sh
-    class main
-    user root
-    disabled
-    oneshot

@@ -6,9 +6,9 @@
 properties() {
 kernel.string=
 do.devicecheck=0
-do.initd=0
 do.modules=1
 do.cleanup=1
+do.cleanuponabort=0
 device.name1=z2_plus
 device.name2=z2131
 device.name3=Z2
@@ -37,8 +37,6 @@ dump_boot;
 # begin ramdisk changes
 
 # begin ramdisk changes
-insert_line default.prop "persist.sys.usb.config=mtp" after "persist.sys.usb.config=none" "ro.patcher.device=z2_plus";
-#nothing changed
 
 # add custom tuning to init.rc
 insert_line init.qcom.rc "import /init.darkmoon.rc" after "import /init.trace.rc" "import /init.darkmoon.rc\n";

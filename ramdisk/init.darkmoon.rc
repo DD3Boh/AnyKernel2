@@ -109,13 +109,12 @@ on enable-low-power
     chmod 0664 /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq
     chmod 0664 /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
     chmod 0664 /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
-    
-    # Enable Fingerprint boost
-    write /sys/kernel/fp_boost/enabled 1
 
 on property:sys.boot_completed=1
     trigger enable-low-power
-
+    
+    # Enable Fingerprint boost
+    write /sys/kernel/fp_boost/enabled 1
 
 start darkmoon
 

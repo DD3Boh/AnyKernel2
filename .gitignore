@@ -1,0 +1,5 @@
+*.zip
+*.md5
+zImage
+modules/
+.directory

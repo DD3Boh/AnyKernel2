@@ -1,18 +1,10 @@
 # Import Spectrum profiles
 import /init.spectrum.rc
 
-on init
-    write /proc/sys/vm/page-cluster 0
-
 on early-init
-    write /sys/block/mmcblk0/queue/scheduler noop
-    write /sys/block/mmcblk0/mmcblk0rpmb/queue/scheduler noop
-
-    write /sys/block/mmcblk0/queue/read_ahead_kb 2048
-    write /sys/block/mmcblk0/mmcblk0rpmb/queue/read_ahead_kb 2048
+    setprop sys.io.scheduler noop
 
 on boot
-    write /proc/sys/kernel/sched_boost 1
 
     # Update foreground and background cpusets
     write /dev/cpuset/top-app/cpus 0-3
@@ -21,36 +13,7 @@ on boot
     write /dev/cpuset/background/cpus 0-3
     write /dev/cpuset/system-background/cpus 0-3
     
-    # Set light thermal restrictions while optimizing apps
-    # [throttle_freq_LITTLE, throttle_freq_big, throttle_temp, unthrottle_temp]
-    write /sys/kernel/msm_thermal/zone0 "1228800 1632000 46 44"
-    write /sys/kernel/msm_thermal/zone1 "1228800 1555200 50 47"
-    write /sys/kernel/msm_thermal/zone2 "1036800 1248000 55 53"
-    write /sys/kernel/msm_thermal/zone3 "729600 729600 65 63"
-    write /sys/kernel/msm_thermal/enabled 1
-    
 on enable-low-power
-    # Let's disable the schedboost first
-    write /proc/sys/kernel/sched_boost 0
-
-    # Input boost configuration
-    write /sys/kernel/cpu_input_boost/ib_freqs "1228800 1324800"
-    write /sys/kernel/cpu_input_boost/ib_duration_ms 1400
-    write /sys/kernel/cpu_input_boost/enabled 1
-    
-    # Set thermal restrictions
-    write /sys/kernel/msm_thermal/enabled 0
-    write /sys/kernel/msm_thermal/zone0 "1401600 1785600 40 38"
-    write /sys/kernel/msm_thermal/zone1 "1324800 1555200 41 40"
-    write /sys/kernel/msm_thermal/zone2 "1228800 1478400 42 41"
-    write /sys/kernel/msm_thermal/zone3 "1228800 1401600 43 42"
-    write /sys/kernel/msm_thermal/zone4 "1190400 1324800 44 43"
-    write /sys/kernel/msm_thermal/zone5 "1190400 1248000 46 44"
-    write /sys/kernel/msm_thermal/zone6 "1113600 1190400 48 46"
-    write /sys/kernel/msm_thermal/zone7 "1036800 940800 53 50"
-    write /sys/kernel/msm_thermal/zone8 "729600 729600 65 60"
-    write /sys/kernel/msm_thermal/sampling_ms 8000
-    write /sys/kernel/msm_thermal/enabled 1
     
     # according to Qcom this legacy value improves first launch latencies
     # stock value is 512k
@@ -74,7 +37,7 @@ on enable-low-power
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 20000
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis 100000
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack 80000
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 1100000:35 1200000:49 1300000:71 1400000:95"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 1100000:31 1200000:45 1300000:66 1400000:93"
 
     #big
     write /sys/devices/system/cpu/cpu2/cpufreq/interactive/go_hispeed_load 70
@@ -85,7 +48,9 @@ on enable-low-power
     write /sys/devices/system/cpu/cpu2/cpufreq/interactive/timer_rate 20000
     write /sys/devices/system/cpu/cpu2/cpufreq/interactive/max_freq_hysteresis 100000
     write /sys/devices/system/cpu/cpu2/cpufreq/interactive/timer_slack 80000
-    write /sys/devices/system/cpu/cpu2/cpufreq/interactive/target_loads "89 1400000:35 1600000:49 1800000:71 1900000:95"
+    write /sys/devices/system/cpu/cpu2/cpufreq/interactive/target_loads "87 1400000:31 1600000:45 1800000:66 1900000:93"
+    
+    setprop sys.io.scheduler maple
 
     write /sys/block/mmcblk0/queue/rq_affinity 0
     write /sys/block/mmcblk0/mmcblk0rpmbqueue/rq_affinity 0    
@@ -112,9 +77,9 @@ on enable-low-power
     chmod 0664 /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq
     chmod 0664 /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
     chmod 0664 /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
+    
+    # Enable thermal engine
+    write /sys/module/msm_thermal/parameters/enabled "Y"
 
 on property:sys.boot_completed=1
     trigger enable-low-power
-    
-    # Enable Fingerprint boost
-    write /sys/kernel/fp_boost/enabled 1

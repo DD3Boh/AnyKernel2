@@ -12,6 +12,22 @@ ui_print() {
     shift;
   done;
 }
+
+get_system_location() {
+  if [[ $(getprop ro.build.system_root_image) == "true" ]] && [[ $(grep system_root /etc/fstab) != "" ]]; then
+    SYSTEM_MOUNT=/system_root
+    REAL_SYSTEM=/system
+  elif [[ $(getprop ro.build.system_root_image) == "true" ]] && [[ $(grep "system " /etc/fstab) != "" ]]; then
+    SYSTEM_MOUNT=/system
+    REAL_SYSTEM=$SYSTEM_MOUNT/system
+  else
+    SYSTEM_MOUNT=/system
+    REAL_SYSTEM=$SYSTEM_MOUNT
+  fi;
+}
+
+get_system_location;
+
 show_progress() { echo "progress $1 $2" > $OUTFD; }
 file_getprop() { $bb grep "^$2=" "$1" | $bb cut -d= -f2-; }
 int2ver() {
@@ -23,10 +39,12 @@ int2ver() {
     echo "$1";
   fi;
 }
+
 cleanup() {
   cd /tmp;
   rm -rf /tmp/anykernel;
 }
+
 debugging() {
   case $(basename "$ZIPFILE" .zip) in
     *-debugging)
@@ -36,16 +54,17 @@ debugging() {
     ;;
   esac;
 }
+
 is_mounted() { $bb mount | $bb grep " $1 "; }
 unmount_all() {
-  (umount /system;
-  if [ -d /system_root -a ! -f /system/build.prop ]; then
-    umount /system_root;
+  (umount $SYSTEM_MOUNT;
+  if [[ $SYSTEM_MOUNT_NEW != "" ]]; then
+    umount $SYSTEM_MOUNT_NEW;
   fi;
-  umount /system;
   umount /vendor;
   umount /data) 2>/dev/null;
 }
+
 abort() {
   ui_print "$*";
   debugging;
@@ -91,17 +110,18 @@ ui_print " ";
 ui_print " ";
 
 unmount_all;
-if [ ! "$(is_mounted /system)" ]; then
-  $bb mount -o ro -t auto /system;
+if [ ! "$(is_mounted $SYSTEM_MOUNT)" ]; then
+  $bb mount -o ro -t auto $SYSTEM_MOUNT;
 fi;
 ($bb mount -o ro -t auto /vendor;
 $bb mount /data) 2>/dev/null;
-if [ -f /system/system/build.prop ]; then
-  umount /system;
-  (umount /system;
-  mkdir /system_root) 2>/dev/null;
+if [[ $REAL_SYSTEM == "/system/system" ]]; then
+  umount $SYSTEM_MOUNT;
+  umount $SYSTEM_MOUNT 2>/dev/null;
+  mkdir /system_root 2>/dev/null;
   $bb mount -o ro -t auto /dev/block/bootdevice/by-name/system /system_root;
   $bb mount -o bind /system_root/system /system;
+  SYSTEM_MOUNT_NEW=/system_root;
 fi;
 savedpath="$LD_LIBRARY_PATH";
 savedpre="$LD_PRELOAD";
@@ -111,7 +131,7 @@ unset LD_PRELOAD;
 if [ ! "$(getprop 2>/dev/null)" ]; then
   getprop() {
     local propval="$(file_getprop /default.prop $1 2>/dev/null)";
-    test "$propval" || local propval="$(file_getprop /system/build.prop $1 2>/dev/null)";
+    test "$propval" || local propval="$(file_getprop $REAL_SYSTEM/build.prop $1 2>/dev/null)";
     test "$propval" && echo "$propval" || echo "";
   }
 elif [ ! "$(getprop ro.product.device 2>/dev/null)" -a ! "$(getprop ro.build.product 2>/dev/null)" ]; then
@@ -140,7 +160,7 @@ fi;
 supported_ver="$(file_getprop anykernel.sh supported.versions | $bb tr -d '[:space:]')";
 if [ "$supported_ver" ]; then
   ui_print "Checking Android version...";
-  android_ver="$(file_getprop /system/build.prop ro.build.version.release)";
+  android_ver="$(file_getprop $REAL_SYSTEM/build.prop ro.build.version.release)";
   if [ "$(echo $supported_ver | $bb grep -)" ]; then
     lo_ver=$(echo $supported_ver | $bb cut -d- -f1);
     hi_ver=$(echo $supported_ver | $bb cut -d- -f2);
@@ -179,7 +199,7 @@ fi;
 if [ "$(file_getprop anykernel.sh do.modules)" == 1 ]; then
   ui_print " ";
   ui_print "Pushing modules...";
-  $bb mount -o rw,remount -t auto /system;
+  $bb mount -o rw,remount -t auto $SYSTEM_MOUNT;
   $bb mount -o rw,remount -t auto /vendor 2>/dev/null;
   cd /tmp/anykernel/modules;
   for module in $(find . -name '*.ko'); do
@@ -205,7 +225,7 @@ if [ "$(file_getprop anykernel.sh do.modules)" == 1 ]; then
     fi;
   done;
   cd /tmp/anykernel;
-  $bb mount -o ro,remount -t auto /system;
+  $bb mount -o ro,remount -t auto $SYSTEM_MOUNT;
   $bb mount -o ro,remount -t auto /vendor 2>/dev/null;
 fi;
 
